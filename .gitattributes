@@ -1,9 +1,12 @@
-# 若日后需要把转换产物放进本仓库，必须先配好 Git LFS。
-# 注意：GitHub 免费 LFS 仅 1GB 存储 + 1GB/月带宽，
-# 而 4bit 转换产物约 1.5GB —— 建议权重托管到魔搭 / HuggingFace，
-# 本仓库只放文档与脚本。
+# 权重托管策略（2026-11-01）：>100MB 的权重一律放 GitHub Release 资产（≤2GB/文件），
+# 不进 git、不走 LFS（免费 LFS 仅 1GB，本仓库已超限一次并迁出）。
+# 以下 LFS 规则保留作为误提交保险丝：若大文件意外 git add，会被 LFS 拦截并明确暴露，而不是撑爆仓库。
 *.mnn        filter=lfs diff=lfs merge=lfs -text
 *.mnn.weight filter=lfs diff=lfs merge=lfs -text
 *.bin        filter=lfs diff=lfs merge=lfs -text
 *.safetensors filter=lfs diff=lfs merge=lfs -text
 *.gguf       filter=lfs diff=lfs merge=lfs -text
+
+# shell 脚本强制 LF，避免 CRLF 在 Linux 上破坏 shebang
+*.sh text eol=lf
+*.json text eol=lf

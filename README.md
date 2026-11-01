@@ -170,6 +170,38 @@ swift export --adapters output/checkpoint-xxx --merge_lora true
 
 ---
 
+## 转换产物（成品 MNN 包）下载
+
+不想自己转？直接去 [Releases](https://github.com/suanx/LycheeAI-coder-2b-II-pro-MNN/releases) 下载
+已转好的 **HQQ int4 成品包**（~1.9GB，量化参数与本文档 ③ 完全一致）：
+
+| 资产 | 说明 |
+|---|---|
+| `llm.mnn.weight` | 权重主体（int4，~1.4GB） |
+| `embeddings_bf16.bin` | embedding（bf16 分离存储，~510MB，该模型词表 130560 偏大） |
+| `llm.mnn` | 计算图（~1.4MB） |
+
+下载后与仓库 `mnn-int4/` 下的 `config.json`、`llm_config.json`、`tokenizer.mtok`、`export_args.json`、`llm.mnn.json`
+放在**同一目录**，按 ④ 推到手机即可。权重走 **GitHub Release 资产**（单文件 ≤2GB，不受 LFS 1GB 配额限制），
+git 仓库只放文档、脚本和小体积配置。
+
+---
+
+## 消音（去拒答）训练
+
+模型默认带安全拒答行为，想产出"有问必答"的版本，走两阶段方案：
+权重正交化消音（abliteration，几分钟）→ 顽固拒答类别 QLoRA 收尾。
+
+**完整教程见 [UNCENSOR_TRAINING.md](UNCENSOR_TRAINING.md)**，`uncensor/` 目录已收录全套脚本
+（imfht/abliteration 三个消音脚本 + 中文拒答率测试集 + 一键包装脚本）。
+
+```bash
+# 魔搭免费 GPU Notebook 上执行
+./uncensor/abliterate_mincpm.sh ./original-f16 ./abliterated 128
+```
+
+---
+
 ## 故障排查
 
 **MiniCPM5 架构不被识别**
@@ -198,13 +230,14 @@ MNN Chat 是纯聊天 App，没有工具执行层。模型能保留的只是"输
 
 ---
 
-## 关于把模型权重放进 GitHub
+## 关于权重托管策略（2026-11-01 更新）
 
-转换产物约 1.5GB，而 GitHub 单文件上限 100MB、免费 LFS 仅 1GB 存储 + 1GB/月带宽——
-**GitHub 并不适合托管模型权重**。
+GitHub 免费 LFS 只有 1GB 存储 + 1GB/月带宽，本项目 1.9GB 的转换产物**曾尝试走 LFS，已超限并迁出**。
+现行策略：
 
-本仓库的定位是**转换工具箱**（文档 + 脚本），不含权重。
-如需分发成品模型，推荐发布到魔搭社区或 Hugging Face：
+- **权重（>100MB）一律放 GitHub Release 资产**（单文件上限 2GB，超大文件分卷），不进 git、不走 LFS；
+- git 仓库只放文档、脚本和小体积配置文件（config/json/tokenizer.mtok 均在 4MB 以内）；
+- 成品也可同步发布到魔搭 / Hugging Face：
 
 ```bash
 swift export --adapters output/checkpoint-xxx --merge_lora true \

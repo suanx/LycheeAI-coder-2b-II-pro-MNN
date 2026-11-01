@@ -1,0 +1,10 @@
+torch
+transformers
+transformer_lens
+einops
+jaxtyping
+datasets
+tqdm
+accelerate
+safetensors
+huggingface_hub
