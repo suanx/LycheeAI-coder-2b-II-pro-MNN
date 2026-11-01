@@ -1,0 +1,33 @@
+// MNN Chat 运行时配置参考（转换脚本会自动生成，可按需微调）
+// 放到模型目录下，命名为 config.json
+{
+  "llm_model": "llm.mnn",
+  "llm_weight": "llm.mnn.weight",
+  "tokenizer_file": "tokenizer.txt",
+
+  // 计算后端：cpu（兼容最好）/ opencl（Android GPU）/ metal（iOS）
+  "backend_type": "cpu",
+  // 线程数，一般设为手机大核数量，4~8
+  "thread_num": 4,
+  // precision: low = fp16（更快）/ high（质量更好，更慢）
+  "precision": "low",
+  // memory: low = 运行时量化，省内存
+  "memory": "low",
+
+  // 生成参数
+  "max_new_tokens": 512,
+  "sampler_type": "mixed",
+  // 该模型官方建议 temperature ≤ 0.4，输出格式更稳定
+  "temperature": 0.4,
+  "topP": 0.9,
+  "topK": 40,
+
+  // 多轮对话复用 KV cache，明显加快连续对话
+  "reuse_kv": true,
+  // mmap 映射权重，加快加载、降低内存占用（词表 130560，embedding 约 500MB）
+  "use_mmap": true,
+  "mmap_size": 1024,
+
+  // ⚠️ 必须显式声明身份，否则模型可能误认自己是别的模型
+  "system_prompt": "你是 LycheeAI-coder-2b-II-pro，由 MiniCPM5-2B 通过 LoRA 微调而来的编程助手。回答简洁、直接，不谄媚；做不到的事直接说明，不要编造。"
+}

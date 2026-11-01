@@ -1,0 +1,32 @@
+// llm_config.json 由 llmexport 自动生成，描述模型结构。
+// 下面列出 LycheeAI-coder-2b-II-pro (MiniCPM5-2B) 的已知结构参数，
+// 若自动生成失败或字段缺失，可据此手工核对/补齐。
+{
+  "model_type": "llama",
+  "architecture": "LlamaForCausalLM",
+
+  // ---- 结构参数（供核对，勿随意改动）----
+  "_reference": {
+    "num_hidden_layers": 42,
+    "hidden_size": 2048,
+    "intermediate_size": 6144,
+    "num_attention_heads": 16,
+    "num_key_value_heads": 2,
+    "head_dim": 128,
+    "vocab_size": 130560,
+    "rope_theta": 5000000,
+    "max_position_embeddings": 131072,
+    "torch_dtype": "bfloat16"
+  },
+
+  // ---- 对话模板 ----
+  // 该模型的工具调用能力依赖完整 chat template，缺失会导致对话格式错乱。
+  // 请从原权重仓库的 chat_template.jinja 复制内容到下面的 jinja 字段
+  // （或使用同系列已验证模板）。
+  "use_template": true,
+  "chat_template": "",
+  "jinja": "",
+
+  "is_visual": false,
+  "is_audio": false
+}
