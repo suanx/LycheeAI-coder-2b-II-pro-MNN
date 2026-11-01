@@ -57,24 +57,28 @@ class SFTData(Dataset):
                 if not msgs:
                     bad += 1
                     continue
-                try:
-                    enc = tok.apply_chat_template(
-                        msgs, return_tensors='pt', add_generation_prompt=False,
-                        return_assistant_tokens_mask=True, truncation=True,
-                        max_length=max_len)
-                except TypeError:
-                    # 老版 transformers 没有 return_assistant_tokens_mask，退化成全量训练
-                    enc = tok.apply_chat_template(
-                        msgs, return_tensors='pt', add_generation_prompt=False,
-                        truncation=True, max_length=max_len)
-                    ids = enc['input_ids'][0]
-                    self.ex.append({'input_ids': ids, 'labels': ids.clone()})
-                    continue
-                ids = enc['input_ids'][0]
-                mask = torch.tensor(enc['assistant_masks'][0], dtype=torch.bool)
-                labels = ids.clone()
-                labels[~mask] = -100          # 非 assistant 部分不参与梯度
-                self.ex.append({'input_ids': ids, 'labels': labels})
+                # 完全手工拼接 token id，不依赖 apply_chat_template 的返回类型
+                im_start = tok.convert_tokens_to_ids('<|im_start|>')
+                im_end = tok.convert_tokens_to_ids('<|im_end|>')
+                nl = tok.convert_tokens_to_ids('\n')
+                def enc(t):
+                    return tok.encode(t, add_special_tokens=False) if t else []
+                ids, lab = [], []
+                ids.append(tok.bos_token_id); lab.append(-100)
+                for m in msgs:
+                    role = m.get('role', 'user')
+                    seg = [im_start] + enc(role) + [nl] + enc(m.get('content', '')) + [im_end] + [nl]
+                    is_ass = (role == 'assistant')
+                    for j, tid in enumerate(seg):
+                        ids.append(tid)
+                        lab.append(tid if (is_ass and j >= 3) else -100)
+                if len(ids) > max_len:
+                    ids, lab = ids[:max_len], lab[:max_len]
+                ids_t = torch.tensor(ids, dtype=torch.long)
+                labels = torch.tensor(lab, dtype=torch.long)
+                if (labels != -100).sum().item() == 0:
+                    labels = ids_t.clone()
+                self.ex.append({'input_ids': ids_t, 'labels': labels})
         print(f'[data] 有效样本 {len(self.ex)} 条，跳过 {bad} 条')
 
     def __len__(self):
